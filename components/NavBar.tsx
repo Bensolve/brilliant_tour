@@ -6,9 +6,15 @@ import { Menu, X, Home, Search, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+import { usePathname } from 'next/navigation'
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
+const pathname = usePathname()
 
+  // Hide on these pages
+  if (pathname === '/login' || pathname === '/register') {
+    return null
+  }
   return (
     <nav className="bg-gray-900 text-white" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4">
