@@ -75,7 +75,7 @@ export default function RegisterPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder=""
                   className="h-12 text-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                 />
               </div>
@@ -92,7 +92,7 @@ export default function RegisterPage() {
                       setPassword(e.target.value);
                       checkPasswordMatch(); // ← add this line
                     }}
-                    placeholder="Enter your password"
+                   
                     className="h-12 text-lg pr-12 border-gray-300 focus:border-green-500 focus:ring-green-500"
                   />
                   <button
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                       setConfirmPassword(e.target.value);
                       checkPasswordMatch(); // ← this line calls the check
                     }}
-                    placeholder="Re-enter your password"
+                    
                     className="h-12 text-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
                   />
                   <button
