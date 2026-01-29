@@ -1,15 +1,29 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Calendar, MapPin, DollarSign, CheckCircle2 } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, DollarSign, CheckCircle2 } from "lucide-react";
 
-export function TripCard({ booking }) {
-  const trip = booking.trips
-  const isPaid = booking.status === 'paid'
+interface Trip {
+  title: string;
+  from_place: string;
+  to_place: string;
+  price: number;
+  departure_date: string;
+}
+
+interface Booking {
+  id: string;
+  status: string;
+  trips: Trip | null;
+}
+
+export function TripCard({ booking }: { booking: Booking }) {
+  const trip = booking.trips;
+  const isPaid = booking.status === "paid";
 
   return (
     <Card className="overflow-hidden border-2 border-gray-200 hover:border-green-500 transition-all">
       {/* Fake photo – replace with real later */}
-      <div className="h-48 bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+      <div className="h-48 bg-linear-to-br from-green-400 to-blue-500 flex items-center justify-center">
         <p className="text-white text-xl font-bold">{trip?.title}</p>
       </div>
       <CardHeader className="pb-2">
@@ -20,12 +34,17 @@ export function TripCard({ booking }) {
           <MapPin size={18} /> {trip?.from_place} → {trip?.to_place}
         </div>
         <div className="flex items-center gap-2 text-gray-700">
-          <Calendar size={18} /> {new Date(trip?.departure_date).toLocaleDateString()}
+          <Calendar size={18} />
+          {trip?.departure_date
+            ? new Date(trip.departure_date).toLocaleDateString()
+            : "No date yet"}
         </div>
         <div className="flex items-center gap-2 text-gray-700">
           <DollarSign size={18} /> ₦{trip?.price}
         </div>
-        <div className={`flex items-center gap-2 font-medium ${isPaid ? 'text-green-600' : 'text-yellow-600'}`}>
+        <div
+          className={`flex items-center gap-2 font-medium ${isPaid ? "text-green-600" : "text-yellow-600"}`}
+        >
           {isPaid ? <CheckCircle2 size={18} /> : null}
           Status: {booking.status.toUpperCase()}
         </div>
@@ -35,5 +54,5 @@ export function TripCard({ booking }) {
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }
