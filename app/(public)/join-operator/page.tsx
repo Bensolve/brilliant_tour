@@ -18,14 +18,15 @@ export default function OperatorJoinPage() {
     e.preventDefault();
     setLoading(true);
 
-    const { data: userData, error: authError } = await supabase.auth.getUser();
-    if (authError || !userData?.user) {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("You must be signed in to apply as an operator.");
+      router.push("/login?returnTo=/join-operator");
       setLoading(false);
-      router.push("/login");
       return;
     }
 
-    const user = userData.user;
     const formData = new FormData(e.currentTarget);
 
     const { error } = await supabase.from("operators").insert({
