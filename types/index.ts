@@ -1,6 +1,6 @@
 // types/index.ts
 
-export type UserRole = 'TRAVELER' | 'SCOUT' | 'OPERATOR' | 'ADMIN';
+export type UserRole = 'traveler' | 'scout' | 'operator' | 'admin'; // Standardized to lowercase
 
 export interface UserProfile {
   id: string;
@@ -19,22 +19,44 @@ export interface Trip {
   from_place: string;
   to_place: string;
   departure_date: string;
-  price: number;            // What the traveler pays
-  scout_bounty: number;     // What the operator offers as a reward
+  price: number;
+  scout_bounty: number;
   seats_available: number;
   image_url?: string;
-  operator_id: string;      // Link to the user who created the trip
+  operator_id: string;
 }
 
 export interface Booking {
   id: string;
   user_id: string;
   trip_id: string;
-  scout_id?: string;        // ID of the person who shared the link
+  scout_id?: string;
   status: 'pending' | 'paid' | 'cancelled';
   total_price: number;
-  admin_fee: number;        // Your 15% cut of the bounty
-  scout_earning: number;    // Scout's 85% cut of the bounty
+  admin_fee: number;
+  scout_earning: number;
   created_at: string;
   trips?: Trip;
+}
+
+// --- ADDED FOR PRODUCTION READINESS ---
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  amount: number;
+  type: 'earning' | 'payout' | 'payment';
+  status: 'pending' | 'success' | 'failed';
+  reference?: string; // Paystack reference
+  created_at: string;
+}
+
+export interface Operator {
+  id: string;
+  user_id: string;
+  company_name: string;
+  fleet_size: number;
+  momo_number: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
 }

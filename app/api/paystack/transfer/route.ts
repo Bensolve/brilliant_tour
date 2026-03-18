@@ -1,4 +1,5 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { getLoggedInUser } from "@/lib/actions/user.actions";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -6,7 +7,7 @@ export async function POST(req: Request) {
   const { amount, momoNumber, provider } = await req.json();
 
   // 1. Get current user
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getLoggedInUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   // 2. Double-check balance in DB before sending money

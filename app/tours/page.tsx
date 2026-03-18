@@ -1,6 +1,6 @@
 // app/tours/page.tsx
-import { createClient } from "@/utils/supabase/server";
-import { TourCard } from "@/components/TourCard";
+import { createClient } from "@/lib/supabase/server";
+import { TourCard } from "@/components/public/TourCard";
 
 export default async function ToursPage() {
   const supabase = await createClient();

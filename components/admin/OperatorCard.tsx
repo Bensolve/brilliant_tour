@@ -16,7 +16,14 @@ interface OperatorCardProps {
   status: string;
 }
 
-export function OperatorCard({ id, userId, name, fleetSize, location, status }: OperatorCardProps) {
+export function OperatorCard({
+  id,
+  userId,
+  name,
+  fleetSize,
+  location,
+  status,
+}: OperatorCardProps) {
   const [processing, setProcessing] = useState(false);
 
   const handleApprove = async () => {
@@ -67,10 +74,13 @@ export function OperatorCard({ id, userId, name, fleetSize, location, status }: 
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-2 text-2xl font-black text-gray-900">
-          <Bus className="text-green-500" size={24} /> {fleetSize} <span className="text-sm font-medium text-gray-400">Buses</span>
+          <Bus className="text-green-500" size={24} /> {fleetSize}{" "}
+          <span className="text-sm font-medium text-gray-400">Buses</span>
         </div>
-        <p className="text-xs text-gray-500 mt-1 font-medium">Routes: {location}</p>
-        
+        <p className="text-xs text-gray-500 mt-1 font-medium">
+          Routes: {location}
+        </p>
+
         <div className="flex gap-2 mt-6">
           <Button
             size="sm"
@@ -78,7 +88,8 @@ export function OperatorCard({ id, userId, name, fleetSize, location, status }: 
             onClick={handleApprove}
             className="bg-green-600 hover:bg-green-700 w-full flex gap-1 rounded-xl h-10"
           >
-            <CheckCircle2 size={14} /> {processing ? "Approving..." : "Approve"}
+            <CheckCircle2 size={14} />{" "}
+            {processing ? "Approving..." : "Approve"}
           </Button>
           <Button
             size="sm"
@@ -93,3 +104,4 @@ export function OperatorCard({ id, userId, name, fleetSize, location, status }: 
     </Card>
   );
 }
+

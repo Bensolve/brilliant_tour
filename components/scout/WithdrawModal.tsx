@@ -1,10 +1,9 @@
-// components/scout/WithdrawModal.tsx
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Wallet, Smartphone } from "lucide-react";
+import { Wallet } from "lucide-react";
 
 export function WithdrawModal({ currentBalance }: { currentBalance: number }) {
   const [amount, setAmount] = useState("");
@@ -12,12 +11,11 @@ export function WithdrawModal({ currentBalance }: { currentBalance: number }) {
 
   const handleWithdraw = async () => {
     setLoading(true);
-    // Call the API route we just made
     const res = await fetch("/api/paystack/transfer", {
       method: "POST",
       body: JSON.stringify({ amount: Number(amount) }),
     });
-    
+
     if (res.ok) alert("Money sent to your MoMo!");
     setLoading(false);
   };
@@ -36,25 +34,32 @@ export function WithdrawModal({ currentBalance }: { currentBalance: number }) {
 
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-bold uppercase text-gray-400">Amount (GHS)</label>
-          <Input 
-            type="number" 
-            placeholder="0.00" 
+          <label className="text-xs font-bold uppercase text-gray-400">
+            Amount (GHS)
+          </label>
+          <Input
+            type="number"
+            placeholder="0.00"
             className="h-14 text-2xl font-bold rounded-xl"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
         </div>
 
-        <Button 
+        <Button
           onClick={handleWithdraw}
-          disabled={loading || Number(amount) > currentBalance || Number(amount) < 50}
+          disabled={
+            loading || Number(amount) > currentBalance || Number(amount) < 50
+          }
           className="w-full h-14 bg-green-600 hover:bg-green-700 text-white rounded-xl text-lg font-bold transition-all"
         >
           {loading ? "Processing..." : "Send to MoMo"}
         </Button>
-        <p className="text-center text-[10px] text-gray-400">Min. withdrawal: GH₵ 50.00</p>
+        <p className="text-center text-[10px] text-gray-400">
+          Min. withdrawal: GH₵ 50.00
+        </p>
       </div>
     </div>
   );
 }
+

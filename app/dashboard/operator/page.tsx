@@ -1,21 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getLoggedInUser } from '@/lib/actions/user.actions'
 
 export default async function OperatorDashboard() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getLoggedInUser()
 
   // 1. Are they logged in?
   if (!user) redirect('/login')
 
-  // 2. Fetch role to verify they are an Operator
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'OPERATOR' && profile?.role !== 'ADMIN') {
+  // 2. Verify they are an Operator
+  if (user.role !== 'OPERATOR' && user.role !== 'ADMIN') {
     redirect('/') // Kick out if they don't have permission
   }
 

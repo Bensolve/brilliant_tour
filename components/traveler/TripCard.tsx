@@ -22,7 +22,6 @@ export function TripCard({ booking }: { booking: Booking }) {
 
   return (
     <Card className="overflow-hidden border-2 border-gray-200 hover:border-green-500 transition-all">
-      {/* Fake photo – replace with real later */}
       <div className="h-48 bg-linear-to-br from-green-400 to-blue-500 flex items-center justify-center">
         <p className="text-white text-xl font-bold">{trip?.title}</p>
       </div>
@@ -43,7 +42,9 @@ export function TripCard({ booking }: { booking: Booking }) {
           <DollarSign size={18} /> ₦{trip?.price}
         </div>
         <div
-          className={`flex items-center gap-2 font-medium ${isPaid ? "text-green-600" : "text-yellow-600"}`}
+          className={`flex items-center gap-2 font-medium ${
+            isPaid ? "text-green-600" : "text-yellow-600"
+          }`}
         >
           {isPaid ? <CheckCircle2 size={18} /> : null}
           Status: {booking.status.toUpperCase()}
@@ -56,3 +57,4 @@ export function TripCard({ booking }: { booking: Booking }) {
     </Card>
   );
 }
+

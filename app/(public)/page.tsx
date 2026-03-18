@@ -1,11 +1,11 @@
-import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import Camp from "@/components/Camp";
-import Guide from "@/components/Guide";
-import Pricing from "@/components/Pricing";
-import GetApp from "@/components/GetApp";
-import FAQ from "@/components/FAQ";
-import Footer from "@/components/Footer";
+import Hero from "@/components/public/Hero";
+import Features from "@/components/public/Features";
+import Camp from "@/components/public/Camp";
+import Guide from "@/components/public/Guide";
+import Pricing from "@/components/public/Pricing";
+import GetApp from "@/components/public/GetApp";
+import FAQ from "@/components/public/FAQ";
+import Footer from "@/components/public/Footer";
 
 export default function HomePage() {
   return (

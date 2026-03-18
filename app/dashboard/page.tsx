@@ -1,28 +1,34 @@
 "use client";
 
 import { useEffect, useState, ChangeEvent } from "react";
-import { supabase } from "@/lib/supabase";
+// FIX: Using the creator function as per our lib structure
+import { createClient } from "@/lib/supabase/client"; 
 import { Button } from "@/components/ui/button";
 import { 
   Calendar, MapPin, Ticket, ChevronRight, 
-  PlaneTakeoff, History, User, LogOut, 
-  Heart, Camera, Loader2
+  PlaneTakeoff, Heart, Camera, Loader2,
+  User, LogOut
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-// 1. Import your centralized types
-import { Trip, Booking, UserProfile } from "@/types";
+// Centralized types and actions
+import { Booking, UserProfile } from "@/types";
+import { getLoggedInUser } from "@/lib/actions/user.actions";
 
 export default function Dashboard() {
+  const router = useRouter();
+  const supabase = createClient(); 
+
   const [activeTab, setActiveTab] = useState<"trips" | "profile" | "saved">("trips");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form State
-  const [formData, setFormData] = useState<UserProfile>({
+  // Form State separated from strict UserProfile interface to avoid missing 'id/role' errors
+  const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
     email: ""
@@ -30,9 +36,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getLoggedInUser();
+      
       if (!user) {
-        window.location.href = "/login";
+        router.push("/login");
         return;
       }
 
@@ -51,42 +58,30 @@ export default function Dashboard() {
 
       if (!bookingsRes.error) setBookings(bookingsRes.data || []);
       
-      // Fixed: Create a consolidated profile object
-      const fetchedProfile = profileRes.data || { 
-        id: user.id, 
-        email: user.email, 
-        full_name: "", 
-        phone: "" 
-      };
-
-      setProfile(fetchedProfile);
-
-      // Sync data to the form state immediately
-      setFormData({
-        full_name: fetchedProfile.full_name || "",
-        phone: fetchedProfile.phone || "",
-        email: fetchedProfile.email || ""
-      });
+      if (profileRes.data) {
+        const fetchedProfile = profileRes.data as UserProfile;
+        setProfile(fetchedProfile);
+        setFormData({
+          full_name: fetchedProfile.full_name || "",
+          phone: fetchedProfile.phone || "",
+          email: fetchedProfile.email || ""
+        });
+      }
 
       setLoading(false);
     };
 
     fetchData();
-  }, []);
+  }, [supabase, router]);
 
-  // Handle Input Changes
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Save Profile to Supabase
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getLoggedInUser();
 
     if (user) {
       const { error } = await supabase
@@ -99,10 +94,11 @@ export default function Dashboard() {
         });
 
       if (!error) {
+        // Update local profile state while keeping existing fields like role/id
         setProfile(prev => prev ? { ...prev, ...formData } : null);
         alert("Profile updated successfully!");
       } else {
-        alert("Error updating profile. Check your SQL table!");
+        alert("Error updating profile.");
       }
     }
     setIsSaving(false);
@@ -123,43 +119,25 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] flex">
-      
-      {/* ─── SIDEBAR ───────────────────────────────────── */}
+      {/* SIDEBAR */}
       <aside className="hidden lg:flex w-72 bg-[#1a1a1a] flex-col p-8 fixed h-full shadow-2xl">
         <div className="text-2xl font-black italic text-white mb-12 tracking-tighter">
           Brilliant<span className="text-green-500 text-3xl">.</span>Tour
         </div>
-        
         <nav className="space-y-2 flex-1">
-          <NavButton 
-             icon={<PlaneTakeoff size={18}/>} 
-             label="My Journeys" 
-             active={activeTab === 'trips'} 
-             onClick={() => setActiveTab('trips')} 
-          />
-          <NavButton 
-             icon={<User size={18}/>} 
-             label="Traveler Profile" 
-             active={activeTab === 'profile'} 
-             onClick={() => setActiveTab('profile')} 
-          />
-          <NavButton 
-             icon={<Heart size={18}/>} 
-             label="Saved Places" 
-             active={activeTab === 'saved'} 
-             onClick={() => setActiveTab('saved')} 
-          />
+          <NavButton icon={<PlaneTakeoff size={18}/>} label="My Journeys" active={activeTab === 'trips'} onClick={() => setActiveTab('trips')} />
+          <NavButton icon={<User size={18}/>} label="Traveler Profile" active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+          <NavButton icon={<Heart size={18}/>} label="Saved Places" active={activeTab === 'saved'} onClick={() => setActiveTab('saved')} />
         </nav>
-
         <button 
-          onClick={() => supabase.auth.signOut().then(() => window.location.href = "/")}
+          onClick={() => supabase.auth.signOut().then(() => router.push("/"))}
           className="flex items-center gap-3 text-gray-500 hover:text-red-400 font-bold text-xs uppercase tracking-widest transition-all mt-auto p-2"
         >
           <LogOut size={18} /> Sign Out
         </button>
       </aside>
 
-      {/* ─── MAIN AREA ─────────────────────────────────── */}
+      {/* MAIN AREA */}
       <main className="flex-1 lg:ml-72 min-h-screen">
         <header className="bg-white border-b border-gray-100 p-8 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md bg-white/80">
           <div>
@@ -175,7 +153,7 @@ export default function Dashboard() {
               <p className="text-sm font-bold text-gray-900">{profile?.full_name || 'New Explorer'}</p>
               <p className="text-[10px] text-green-600 font-black tracking-tighter uppercase">Pro Member</p>
             </span>
-            <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold border-4 border-green-50 shadow-lg">
+            <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold border-4 border-green-50 shadow-lg uppercase">
               {profile?.full_name?.charAt(0) || "U"}
             </div>
           </div>
@@ -191,7 +169,6 @@ export default function Dashboard() {
                   {upcoming.length === 0 && <EmptyState message="No upcoming trips planned yet." />}
                 </div>
               </section>
-
               <section>
                 <SectionHeader title="Travel History" count={past.length} />
                 <div className="grid gap-4 opacity-60">
@@ -212,35 +189,14 @@ export default function Dashboard() {
                     <p className="text-gray-400 text-sm">Updates will be used for your future travel vouchers.</p>
                   </div>
                </div>
-
                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputGroup 
-                      label="Full Name" 
-                      name="full_name"
-                      value={formData.full_name} 
-                      onChange={handleInputChange}
-                    />
-                    <InputGroup 
-                      label="Phone Number" 
-                      name="phone"
-                      value={formData.phone} 
-                      onChange={handleInputChange}
-                    />
+                    <InputGroup label="Full Name" name="full_name" value={formData.full_name} onChange={handleInputChange} />
+                    <InputGroup label="Phone Number" name="phone" value={formData.phone} onChange={handleInputChange} />
                   </div>
-                  <InputGroup 
-                    label="Email Address" 
-                    name="email"
-                    value={formData.email} 
-                    disabled 
-                  />
-                  
+                  <InputGroup label="Email Address" name="email" value={formData.email} disabled />
                   <div className="pt-4">
-                    <Button 
-                      onClick={handleSaveProfile}
-                      disabled={isSaving}
-                      className="bg-[#46a353] hover:bg-[#3d8e48] px-10 py-6 rounded-xl font-black text-[10px] tracking-[0.2em] shadow-lg shadow-green-500/20"
-                    >
+                    <Button onClick={handleSaveProfile} disabled={isSaving} className="bg-[#46a353] hover:bg-[#3d8e48] px-10 py-6 rounded-xl font-black text-[10px] tracking-[0.2em]">
                       {isSaving ? <Loader2 className="animate-spin mr-2" /> : null}
                       {isSaving ? "SAVING..." : "SAVE PROFILE CHANGES"}
                     </Button>
@@ -254,8 +210,7 @@ export default function Dashboard() {
   );
 }
 
-// ─── TYPED MINI COMPONENTS ────────────────────────────
-
+// TYPED MINI COMPONENTS
 function NavButton({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void }) {
   return (
     <button onClick={onClick} className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl font-bold text-[11px] uppercase tracking-[0.2em] transition-all ${active ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
@@ -277,9 +232,8 @@ function SectionHeader({ title, count }: { title: string, count: number }) {
 function BookingCard({ booking, isPast }: { booking: Booking, isPast?: boolean }) {
   const trip = booking.trips;
   const isPaid = booking.status === 'paid';
-
   return (
-    <div className="bg-white border border-gray-100 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:shadow-xl transition-all hover:border-green-100">
+    <div className="bg-white border border-gray-100 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:shadow-xl transition-all">
       <div className="flex-1">
         <div className="flex items-center gap-3 mb-2">
           <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${isPaid ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
@@ -293,12 +247,11 @@ function BookingCard({ booking, isPast }: { booking: Booking, isPast?: boolean }
           <span className="flex items-center"><Calendar size={14} className="mr-1 text-green-500"/> {trip?.departure_date && format(new Date(trip.departure_date), 'MMM dd, yyyy')}</span>
         </div>
       </div>
-      
       <div className="flex items-center gap-4">
         {isPaid ? (
-          <Button variant="outline" className="text-[10px] font-black tracking-widest border-2 hover:bg-green-600 hover:text-white hover:border-green-600 transition-all">VIEW TICKET</Button>
+          <Button variant="outline" className="text-[10px] font-black tracking-widest border-2">VIEW TICKET</Button>
         ) : (
-          <Button className="bg-amber-500 hover:bg-amber-600 text-[10px] font-black tracking-widest text-white shadow-lg shadow-amber-500/20">PAY NOW</Button>
+          <Button className="bg-amber-500 hover:bg-amber-600 text-[10px] font-black tracking-widest text-white">PAY NOW</Button>
         )}
         <ChevronRight size={20} className="text-gray-300 group-hover:text-green-500 group-hover:translate-x-1 transition-all" />
       </div>
@@ -306,18 +259,11 @@ function BookingCard({ booking, isPast }: { booking: Booking, isPast?: boolean }
   );
 }
 
-interface InputGroupProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-}
-
-function InputGroup({ label, ...props }: InputGroupProps) {
+function InputGroup({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="space-y-2 w-full">
       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</label>
-      <input 
-        className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-500/20 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
-        {...props} 
-      />
+      <input className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-green-500/20 outline-none transition-all" {...props} />
     </div>
   );
 }

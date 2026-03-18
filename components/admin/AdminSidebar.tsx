@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { createClient } from "@/lib/supabase/client"; // Use your CLIENT-side supabase creator
 import { useRouter } from "next/navigation";
+import { signOutUser } from "@/lib/actions/user.actions";
 import {
   Bus,
   LayoutDashboard,
@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   MapPin,
   LogOut,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 
 import {
@@ -54,18 +54,15 @@ const navItems = [
 ];
 
 export function AdminSidebar() {
-   const router = useRouter();
-  const supabase = createClient(); // Initialize the bouncer on the client side
+  const router = useRouter();
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    
-    if (!error) {
-      // Refresh the page or redirect to ensure the Proxy/Middleware catches the change
-      router.push("/login");
-      router.refresh(); 
-    }
+    await signOutUser();
+
+    router.push("/login");
+    router.refresh();
   };
+
   return (
     <Sidebar collapsible="icon" className="border-r border-gray-200">
       <SidebarHeader className="h-16 flex items-center px-4 border-b border-gray-100">
@@ -73,7 +70,9 @@ export function AdminSidebar() {
           <div className="bg-green-600 p-1.5 rounded-lg text-white">
             <Bus size={20} />
           </div>
-          <span className="group-data-[collapsible=icon]:hidden">BRILLIANT<span className="text-green-600 font-light">TOUR</span></span>
+          <span className="group-data-[collapsible=icon]:hidden">
+            BRILLIANT<span className="text-green-600 font-light">TOUR</span>
+          </span>
         </Link>
       </SidebarHeader>
 
@@ -102,7 +101,10 @@ export function AdminSidebar() {
       <SidebarFooter className="border-t border-gray-100 p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSignOut} className="text-gray-500 hover:text-red-600 transition-colors">
+            <SidebarMenuButton
+              onClick={handleSignOut}
+              className="text-gray-500 hover:text-red-600 transition-colors"
+            >
               <LogOut className="h-5 w-5" />
               <span>Sign Out</span>
             </SidebarMenuButton>
@@ -112,3 +114,4 @@ export function AdminSidebar() {
     </Sidebar>
   );
 }
+

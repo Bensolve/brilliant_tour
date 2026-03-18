@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { OperatorCard } from "@/components/operator-card";
+import { OperatorCard } from "@/components/admin/OperatorCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

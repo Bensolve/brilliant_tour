@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { getPaystack } from '@/lib/paystack-client';
+import { getLoggedInUser } from '@/lib/actions/user.actions';
+import { createBookingForUser, recordPaymentAndMarkBookingPaid } from '@/lib/actions/booking.actions';
+import { searchTrips as searchTripsAction } from '@/lib/actions/trip.actions';
 import { MapPin, Calendar, Search, Star, Clock, ArrowRight, ShieldCheck, Users } from 'lucide-react';
 import Image from 'next/image';
 
@@ -29,13 +31,9 @@ export default function SearchPage() {
     const searchTrips = useCallback(async () => {
         setLoading(true);
         try {
-            let query = supabase.from('trips').select('*');
-            if (fromPlace) query = query.ilike('from_place', `%${fromPlace}%`);
-            if (toPlace) query = query.ilike('to_place', `%${toPlace}%`);
-            
-            const { data, error } = await query;
-            if (error) throw error;
-            setTrips(data || []);
+            const result = await searchTripsAction({ fromPlace, toPlace });
+            if ("error" in result) throw new Error(result.error);
+            setTrips(result.data || []);
         } catch (error) {
             console.error("Search failed:", error);
         } finally {
@@ -49,23 +47,19 @@ export default function SearchPage() {
     }, [searchTrips]);
 
     const handleBooking = async (trip: Trip) => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getLoggedInUser();
         if (!user || !user.email) {
             alert("Please login to book your adventure!");
             window.location.href = '/login';
             return;
         }
 
-        const { data: booking, error: bookingError } = await supabase
-            .from('bookings')
-            .insert({ user_id: user.id, trip_id: trip.id, status: 'pending' })
-            .select()
-            .single();
-
-        if (bookingError || !booking) {
-            alert("Booking failed. Please try again.");
+        const bookingRes = await createBookingForUser({ tripId: trip.id });
+        if ("error" in bookingRes) {
+            alert(bookingRes.error || "Booking failed. Please try again.");
             return;
         }
+        const booking = bookingRes.data;
 
         const paystack = await getPaystack();
         paystack.newTransaction({
@@ -74,13 +68,15 @@ export default function SearchPage() {
             amount: trip.price * 100, 
             reference: `booking_${booking.id}`,
             onSuccess: async () => {
-                await supabase.from('payments').insert({
-                    booking_id: booking.id,
+                const payRes = await recordPaymentAndMarkBookingPaid({
+                    bookingId: booking.id,
                     reference: `booking_${booking.id}`,
                     amount: trip.price,
-                    status: 'success'
                 });
-                await supabase.from('bookings').update({ status: 'paid' }).eq('id', booking.id);
+                if ("error" in payRes) {
+                    alert("Payment saved but booking update failed: " + payRes.error);
+                    return;
+                }
                 alert("Payment successful! Pack your bags.");
             },
             onCancel: () => alert("Payment cancelled")

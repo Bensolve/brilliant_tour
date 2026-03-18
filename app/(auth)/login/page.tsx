@@ -7,12 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { handleLogin } from './actions';
+import { signInUser } from "@/lib/actions/user.actions";
 
 export default function LoginPage() {
   // state holds the return value from your Server Action (e.g., the error message)
   // isPending is true while the server is thinking (your loading state)
-  const [state, formAction, isPending] = useActionState(handleLogin, null);
+  const [state, formAction, isPending] = useActionState(signInUser, null);
   
   const [showPassword, setShowPassword] = useState(false);
 
@@ -46,7 +46,7 @@ export default function LoginPage() {
                   <Label htmlFor="email" className="text-gray-700">Email</Label>
                   <Input
                     id="email"
-                    name="email" // IMPORTANT: handleLogin uses this 'name'
+                    name="email" // IMPORTANT: signInUser uses this 'name'
                     type="email"
                     required
                     className="h-12 text-lg border-gray-300 focus:border-green-500 focus:ring-green-500"
@@ -60,7 +60,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <Input
                       id="password"
-                      name="password" // IMPORTANT: handleLogin uses this 'name'
+                      name="password" // IMPORTANT: signInUser uses this 'name'
                       type={showPassword ? "text" : "password"}
                       required
                       className="h-12 text-lg pr-12 border-gray-300 focus:border-green-500 focus:ring-green-500"

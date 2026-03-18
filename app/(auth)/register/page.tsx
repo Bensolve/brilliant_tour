@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { handleRegister } from "./actions";
+import { signUpUser } from "@/lib/actions/user.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,7 @@ export default function RegisterPage() {
     setError("");
 
     const formData = new FormData(event.currentTarget);
-    const result = await handleRegister(formData);
+    const result = await signUpUser(formData);
 
     if (result?.error) {
       setError(result.error);

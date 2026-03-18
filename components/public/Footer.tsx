@@ -27,7 +27,11 @@ export default function Footer() {
                 <h4 className="font-bold whitespace-nowrap">{col.title}</h4>
                 <ul className="text-gray-500 flex flex-col gap-4">
                   {col.links.map((link) => (
-                    <Link href="/" key={link} className="hover:text-green-600 transition-colors">
+                    <Link
+                      href="/"
+                      key={link}
+                      className="hover:text-green-600 transition-colors"
+                    >
                       {link}
                     </Link>
                   ))}
@@ -54,8 +58,11 @@ export default function Footer() {
         </div>
 
         <div className="border bg-gray-20" />
-        <p className="text-center text-gray-400 text-sm">2026 Brilliant Tour | All rights reserved</p>
+        <p className="text-center text-gray-400 text-sm">
+          2026 Brilliant Tour | All rights reserved
+        </p>
       </div>
     </footer>
   );
 }
+

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { getLoggedInUser } from "@/lib/actions/user.actions";
+import { createOperatorApplication } from "@/lib/actions/operator.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Building2, Bus, Phone, MapPin } from "lucide-react";
 
 export default function OperatorJoinPage() {
-  const supabase = createClient();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +18,7 @@ export default function OperatorJoinPage() {
     e.preventDefault();
     setLoading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getLoggedInUser();
 
     if (!user) {
       alert("You must be signed in to apply as an operator.");
@@ -29,17 +29,15 @@ export default function OperatorJoinPage() {
 
     const formData = new FormData(e.currentTarget);
 
-    const { error } = await supabase.from("operators").insert({
-      user_id: user.id,
+    const result = await createOperatorApplication({
       company_name: formData.get("company"),
       fleet_size: parseInt(formData.get("fleet") as string),
       momo_number: formData.get("momo"),
       routes: formData.get("routes"),
-      status: "pending",
     });
 
-    if (error) {
-      alert("Error: " + error.message);
+    if ("error" in result) {
+      alert("Error: " + result.error);
     } else {
       alert("Application sent successfully!");
       router.push("/");

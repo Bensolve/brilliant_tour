@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Trip } from '@/types';
+import { createReferralBooking } from '@/lib/actions/booking.actions';
 
 export default function BookingComponent({ trip }: { trip: Trip }) {
   const [loading, setLoading] = useState(false);
@@ -16,29 +16,25 @@ export default function BookingComponent({ trip }: { trip: Trip }) {
 
     // 2. THE CAKE MATH (The Split)
     const bounty = trip.scout_bounty || 0;
-    const adminCut = bounty * 0.15;   // Your 15%
-    const scoutCut = bounty * 0.85;   // Scout's 85%
+    const adminCut = bounty * 0.15; // Your 15%
+    const scoutCut = bounty * 0.85; // Scout's 85%
 
-    // 3. SAVE TO SUPABASE
-    // We create the booking as 'pending' until they pay
-    const { data, error } = await supabase.from('bookings').insert([
-      {
-        trip_id: trip.id,
-        total_price: trip.price,
-        scout_id: scoutId,      // This links the sale to the Scout!
-        admin_fee: adminCut,    // Your profit recorded
-        scout_earning: scoutCut, // Scout's profit recorded
-        status: 'pending',
-      },
-    ]).select();
+    // 3. SAVE VIA SERVER ACTION
+    const { data, error } = await createReferralBooking({
+      tripId: trip.id,
+      totalPrice: trip.price,
+      scoutId,
+      adminFee: adminCut,
+      scoutEarning: scoutCut,
+    });
 
     if (error) {
-      alert("Error creating booking: " + error.message);
+      alert('Error creating booking: ' + error);
     } else {
-      alert("Booking saved! Now redirecting to MoMo payment...");
+      alert('Booking saved! Now redirecting to MoMo payment...');
       // Here is where you would call your Paystack function
     }
-    
+
     setLoading(false);
   };
 
@@ -49,7 +45,7 @@ export default function BookingComponent({ trip }: { trip: Trip }) {
           <p className="text-gray-500 text-sm">Total Price</p>
           <p className="text-2xl font-bold">GH₵ {trip.price}</p>
         </div>
-        <button 
+        <button
           onClick={handleBooking}
           disabled={loading}
           className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-all"
@@ -63,3 +59,4 @@ export default function BookingComponent({ trip }: { trip: Trip }) {
     </div>
   );
 }
+

@@ -9,20 +9,22 @@ interface ShareProps {
   scoutBounty: number;
 }
 
-export default function ShareToWhatsApp({ tripTitle, tripId, scoutId, scoutBounty }: ShareProps) {
-  
+export default function ShareToWhatsApp({
+  tripTitle,
+  tripId,
+  scoutId,
+  scoutBounty,
+}: ShareProps) {
   const handleShare = () => {
-    // 1. Build the Magic Link (pointing to your website)
     const baseUrl = window.location.origin;
     const magicLink = `${baseUrl}/trips/${tripId}?ref=${scoutId}`;
 
-    // 2. Draft the Message (Ghana Style)
-    const message = `🔥 Big Trip: ${tripTitle}!\n\n` +
-                    `Don't miss out on this. Book your seat here via MoMo: \n` +
-                    `${magicLink}\n\n` +
-                    `Safe travel guaranteed! ✅`;
+    const message =
+      `🔥 Big Trip: ${tripTitle}!\n\n` +
+      `Don't miss out on this. Book your seat here via MoMo: \n` +
+      `${magicLink}\n\n` +
+      `Safe travel guaranteed! ✅`;
 
-    // 3. Open WhatsApp
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
   };
@@ -33,9 +35,9 @@ export default function ShareToWhatsApp({ tripTitle, tripId, scoutId, scoutBount
         🚀 SCOUT SIDE-HUSTLE
       </p>
       <p className="text-gray-600 text-xs mb-4">
-        Share this trip. If someone books, you get **GH₵ ${scoutBounty}** instantly!
+        Share this trip. If someone books, you get **GH₵ {scoutBounty}** instantly!
       </p>
-      <button 
+      <button
         onClick={handleShare}
         className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-transform active:scale-95"
       >
@@ -45,3 +47,4 @@ export default function ShareToWhatsApp({ tripTitle, tripId, scoutId, scoutBount
     </div>
   );
 }
+

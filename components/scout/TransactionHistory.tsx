@@ -1,4 +1,3 @@
-// components/scout/TransactionHistory.tsx
 import {
   Table,
   TableBody,
@@ -24,7 +23,9 @@ export function TransactionHistory({ transactions }: { transactions: any[] }) {
         <TableBody>
           {transactions.map((tx) => (
             <TableRow key={tx.id} className="border-white/10 hover:bg-white/5">
-              <TableCell className="font-medium text-white">{tx.traveler_name}</TableCell>
+              <TableCell className="font-medium text-white">
+                {tx.traveler_name}
+              </TableCell>
               <TableCell className="text-gray-400">{tx.tour_destination}</TableCell>
               <TableCell className="text-right font-bold text-green-500">
                 +GH₵ {tx.amount.toFixed(2)}
@@ -41,3 +42,4 @@ export function TransactionHistory({ transactions }: { transactions: any[] }) {
     </div>
   );
 }
+
