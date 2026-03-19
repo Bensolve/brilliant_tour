@@ -26,7 +26,7 @@ export async function createTrip(input: {
 
     const { error } = await supabase.from("trips").insert([tripData]);
 
-    if (error) return { error: error.message as const };
+    if (error) return { error: error.message };
     return { success: true as const };
   } catch (error) {
     console.error("createTrip error:", error);
@@ -43,7 +43,7 @@ export async function searchTrips(input: { fromPlace?: string; toPlace?: string 
     if (input.toPlace) query = query.ilike("to_place", `%${input.toPlace}%`);
 
     const { data, error } = await query;
-    if (error) return { error: error.message as const };
+    if (error) return { error: error.message};
 
     return { data: data || [] };
   } catch (error) {

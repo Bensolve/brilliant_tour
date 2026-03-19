@@ -5,7 +5,7 @@ import { useEffect, useState, ChangeEvent } from "react";
 import { createClient } from "@/lib/supabase/client"; 
 import { Button } from "@/components/ui/button";
 import { 
-  Calendar, MapPin, Ticket, ChevronRight, 
+  Calendar, MapPin, ChevronRight, 
   PlaneTakeoff, Heart, Camera, Loader2,
   User, LogOut
 } from "lucide-react";

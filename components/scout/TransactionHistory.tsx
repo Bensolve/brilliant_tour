@@ -8,7 +8,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-export function TransactionHistory({ transactions }: { transactions: any[] }) {
+// 1. Define the specific structure of your transaction
+export interface ScoutTransaction {
+  id: string;
+  traveler_name: string;
+  tour_destination: string;
+  amount: number; // Must be a number for .toFixed(2) to work!
+  status: 'pending' | 'completed' | 'cancelled'; // Or just string if you prefer
+}
+
+// 2. Use the new interface instead of 'any'
+export function TransactionHistory({ transactions }: { transactions: ScoutTransaction[] }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-black/20 backdrop-blur-md overflow-hidden">
       <Table>
@@ -42,4 +52,3 @@ export function TransactionHistory({ transactions }: { transactions: any[] }) {
     </div>
   );
 }
-

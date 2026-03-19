@@ -24,7 +24,7 @@ export async function createOperatorApplication(input: {
       status: "pending",
     });
 
-    if (error) return { error: error.message as const };
+    if (error) return { error: error.message };
     return { success: true as const };
   } catch (error) {
     console.error("createOperatorApplication error:", error);

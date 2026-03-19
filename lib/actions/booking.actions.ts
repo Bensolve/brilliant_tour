@@ -49,7 +49,7 @@ export async function createReferralBooking(input: {
       ])
       .select();
 
-    if (error) return { error: error.message as const };
+   if (error) return { error: error.message };
     return { data };
   } catch (error) {
     console.error("createReferralBooking error:", error);
@@ -75,14 +75,14 @@ export async function recordPaymentAndMarkBookingPaid(input: {
       status: "success",
     });
 
-    if (paymentError) return { error: paymentError.message as const };
+   if (paymentError) return { error: paymentError.message };
 
     const { error: bookingError } = await supabase
       .from("bookings")
       .update({ status: "paid" })
       .eq("id", input.bookingId);
 
-    if (bookingError) return { error: bookingError.message as const };
+    if (bookingError) return { error: bookingError.message };
 
     return { success: true as const };
   } catch (error) {

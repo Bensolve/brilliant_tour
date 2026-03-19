@@ -14,10 +14,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata =  {
   title: "Brilliant Tour | Ghana's Best Travel Network",
   description: "Book buses and earn rewards with the Brilliant Tour Scout Network.",
 };
+
+
+
 
 export default function RootLayout({
   children,
