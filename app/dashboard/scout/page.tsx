@@ -4,10 +4,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Share2, TrendingUp } from "lucide-react";
+import { Copy, Share2 } from "lucide-react";
 
 export default function ScoutDashboard({ user_id = "USER_ID_FROM_SUPABASE" }) {
-  const referralLink = `${window.location.origin}/tours?ref=${user_id}`;
+  // This works everywhere—server, client, and Vercel build!
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+// Remove any trailing slash from siteUrl first, then add /tours
+const cleanSiteUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+const referralLink = `${cleanSiteUrl}tours?ref=${user_id}`;
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
