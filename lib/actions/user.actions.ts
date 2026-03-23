@@ -79,49 +79,43 @@ export async function signUpUser(formData: FormData) {
 
 export async function signInUser(prevState: unknown, formData: FormData) {
   const supabase = await createClient();
-
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  // 1. Sign in the user
+  // 1. Authenticate
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+    email, password,
   });
 
   if (authError || !authData.user) {
     return { error: authError?.message || "Login failed" };
   }
 
+  // 2. Variable to store the role outside the try block
+  let targetPath = "/"; 
+
   try {
-    // 2. Fetch the User's Role
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", authData.user.id)
-      .single();
+      .maybeSingle();
 
-    if (profileError) {
-      console.error("DATABASE ERROR:", profileError.message);
-      return { error: "Could not verify user role." };
-    }
+    const userRole = (profile?.role || "traveler").toLowerCase();
 
-    // 3. Traffic Controller (standardized)
-    const userRole = (profile?.role || "").toLowerCase().trim();
+    // Set the path based on role
+    if (userRole === "admin") targetPath = "/admin";
+    else if (userRole === "operator") targetPath = "/dashboard/operator";
+    else targetPath = "/";
 
-    if (userRole === "admin") {
-      redirect("/admin");
-    } else if (userRole === "operator") {
-      redirect("/dashboard/operator");
-    } else {
-      redirect("/");
-    }
   } catch (error) {
-    console.error("signInUser error:", error);
-    return { error: "Login succeeded, but role check failed." };
+    console.error("Role check failed:", error);
+    // Even if role check fails, we let them in as a standard user
   }
-}
 
+  // 3. REDIRECT ALWAYS HAPPENS OUTSIDE TRY/CATCH
+  redirect(targetPath);
+}
 export async function signOutUser() {
   try {
     const supabase = await createClient();
