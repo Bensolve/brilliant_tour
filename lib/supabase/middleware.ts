@@ -5,20 +5,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 export const updateSession = async (request: NextRequest) => {
-  // 1. Create the initial response
   let supabaseResponse = NextResponse.next({
     request: { headers: request.headers },
   });
 
-  // 2. Initialize the Supabase Client
   const supabase = createServerClient(
     supabaseUrl!,
     supabaseKey!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
+        getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
@@ -30,27 +26,55 @@ export const updateSession = async (request: NextRequest) => {
     }
   );
 
-  // 3. GET THE USER (Must be after initialization)
-  const { data: { user } } = await supabase.auth.getUser();
+  const path = request.nextUrl.pathname;
 
-  // 4. PROTECT THE /ADMIN ROUTE
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Check if logged in
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
+  // 1. Define exactly what we are protecting
+  const isPathAdmin = path.startsWith('/admin');
+  const isPathTraveler = path.startsWith('/dashboard/traveler');
 
-    // Check if role is ADMIN
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
+  // 2. Early Exit: If it's a public page, don't waste time on DB calls
+  if (!isPathAdmin && !isPathTraveler) {
+    return supabaseResponse;
   }
 
-  return supabaseResponse;
-};
+  // 3. Authenticate User
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // 4. Get the Role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+ // ... (After you fetch the profile from Supabase) ...
+
+const userRole = profile?.role?.toLowerCase(); 
+
+// 🕵️ DEBUG LOG: Watch your terminal for this line!
+console.log(`Checking Access: Path [${path}] | User Role [${userRole}]`);
+
+// 1. ADMIN PROTECTION (If it works, don't touch it)
+if (isPathAdmin && userRole !== 'admin') {
+  return NextResponse.redirect(new URL('/', request.url));
+}
+
+// 2. TRAVELER PROTECTION (The "No-Fail" Logic)
+if (path.startsWith('/dashboard/traveler')) {
+  
+  // Safety Net: If the user is an ADMIN, let them in anyway
+  if (userRole === 'admin') return supabaseResponse;
+
+  // Safety Net: If the user is NOT a traveler, kick them out
+  if (userRole !== 'traveler') {
+    console.log("🚫 ACCESS DENIED: User is not a traveler. Sending to Home.");
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+}
+
+// 3. SUCCESS: If they passed the tests, let them through
+return supabaseResponse;}

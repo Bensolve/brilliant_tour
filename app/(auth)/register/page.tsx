@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { signUpUser } from "@/lib/actions/user.actions";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Map, Wallet, ShieldCheck } from "lucide-react";
 
 export default function RegisterPage() {
+  // 2. Initialize searchParams
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role") || "traveler"; // Default to traveler if link is just /register
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +25,32 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+
+  // 3. Dynamic UI helper (Shows the user what they are becoming)
+  const getRoleConfig = () => {
+    switch (role) {
+      case "scout":
+        return {
+          title: "Join as a Scout",
+          sub: "Earn bounties by sharing trips",
+          icon: <Wallet className="text-green-500" />,
+        };
+      case "operator":
+        return {
+          title: "Join as an Operator",
+          sub: "List your tours and reach travelers",
+          icon: <ShieldCheck className="text-blue-500" />,
+        };
+      default:
+        return {
+          title: "Join the Adventure",
+          sub: "Discover and book premium tours",
+          icon: <Map className="text-green-500" />,
+        };
+    }
+  };
+
+  const config = getRoleConfig();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,10 +69,11 @@ export default function RegisterPage() {
       setError(result.error);
     } else {
       setSuccess(true);
+       setTimeout(() => {
+      router.push(`/dashboard/${role}`);
+    }, 1500);
     }
-     setTimeout(() => {
-        router.push("/dashboard/traveler");
-      }, 1500);
+   
     setLoading(false);
   }
 
@@ -53,8 +83,6 @@ export default function RegisterPage() {
     } else {
       setPasswordMatchError("");
     }
-
-   
   };
 
   return (
@@ -72,17 +100,17 @@ export default function RegisterPage() {
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
         <Card className="w-full max-w-md bg-white/90 backdrop-blur-md border-0 shadow-2xl rounded-2xl p-8">
           <CardHeader className="text-center pb-2">
+            <div className="flex justify-center mb-2">{config.icon}</div>
             <CardTitle className="text-3xl font-bold text-gray-800">
-              Join the Adventure
+              {config.title}
             </CardTitle>
-            <p className="text-gray-600 mt-2">
-              Create memories with safe, fun trips
-            </p>
+            <p className="text-gray-600 mt-2">{config.sub}</p>
           </CardHeader>
 
           <CardContent>
             {/* 1. WRAPPED IN FORM */}
             <form onSubmit={handleSubmit} className="space-y-4">
+              <input type="hidden" name="role" value={role} />
               <div className="space-y-4">
                 {/* 2. ADDED FULL NAME (Needed for your Action) */}
                 <div>

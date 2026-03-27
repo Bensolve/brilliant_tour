@@ -51,3 +51,43 @@ export async function searchTrips(input: { fromPlace?: string; toPlace?: string 
     return { error: "Search failed" as const };
   }
 }
+
+// Add these to the bottom of lib/actions/trip.actions.ts
+
+export async function getFeaturedTours() {
+  try {
+    const supabase = await createClient();
+    
+    // We fetch the trips to show on the traveler's dashboard
+    const { data, error } = await supabase
+      .from('trips')
+      .select('*')
+      .limit(3); 
+
+    if (error) throw new Error(error.message);
+    return data || [];
+  } catch (error) {
+    console.error("getFeaturedTours error:", error);
+    return [];
+  }
+}
+
+export async function getUserBookings(userId: string) {
+  try {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        trips (*)
+      `)
+      .eq('user_id', userId);
+
+    if (error) throw new Error(error.message);
+    return data || [];
+  } catch (error) {
+    console.error("getUserBookings error:", error);
+    return [];
+  }
+}
