@@ -8,7 +8,7 @@ export default async function OperatorDashboard() {
   if (!user) redirect('/login')
 
   // 2. Verify they are an Operator
-  if (user.role !== 'OPERATOR' && user.role !== 'ADMIN') {
+  if (user.role !== 'operator' && user.role !== 'admin') {
     redirect('/') // Kick out if they don't have permission
   }
 
