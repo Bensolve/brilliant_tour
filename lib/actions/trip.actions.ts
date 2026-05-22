@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 
+// 1. CREATE TRIP (For Operators)
 export async function createTrip(input: {
   title: FormDataEntryValue | null;
   from_place: FormDataEntryValue | null;
@@ -34,11 +35,15 @@ export async function createTrip(input: {
   }
 }
 
+// 2. SEARCH TRIPS (Optimized for Traveler Search)
 export async function searchTrips(input: { fromPlace?: string; toPlace?: string }) {
   try {
     const supabase = await createClient();
 
-    let query = supabase.from("trips").select("*");
+    let query = supabase.from("trips").select("*")
+      .gt('seats_available', 0) 
+      .gte('departure_date', new Date().toISOString());
+
     if (input.fromPlace) query = query.ilike("from_place", `%${input.fromPlace}%`);
     if (input.toPlace) query = query.ilike("to_place", `%${input.toPlace}%`);
 
@@ -52,16 +57,16 @@ export async function searchTrips(input: { fromPlace?: string; toPlace?: string 
   }
 }
 
-// Add these to the bottom of lib/actions/trip.actions.ts
-
+// 3. GET FEATURED TOURS (For Traveler Dashboard)
 export async function getFeaturedTours() {
   try {
     const supabase = await createClient();
     
-    // We fetch the trips to show on the traveler's dashboard
     const { data, error } = await supabase
       .from('trips')
       .select('*')
+      .gt('seats_available', 0)
+      .gte('departure_date', new Date().toISOString())
       .limit(3); 
 
     if (error) throw new Error(error.message);
@@ -72,6 +77,7 @@ export async function getFeaturedTours() {
   }
 }
 
+// 4. GET USER BOOKINGS (The Missing Piece!)
 export async function getUserBookings(userId: string) {
   try {
     const supabase = await createClient();

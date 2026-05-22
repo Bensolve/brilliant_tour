@@ -20,7 +20,7 @@ export default async function TravelerHome() {
       {/* 1. HERO SECTION */}
       <section className="relative flex flex-col min-h-[700px] pb-24 pt-10 lg:pt-20 xl:pb-32 overflow-hidden bg-blue-70 w-full">
         {/* IMAGE LAYER */}
-        {/* <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0">
           <Image
             src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2000&auto=format&fit=crop"
             alt="Ghana Adventure"
@@ -31,7 +31,7 @@ export default async function TravelerHome() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-blue-70/60 via-transparent to-white/10" />
           <div className="absolute inset-0 bg-gradient-to-r from-blue-70/80 via-blue-70/20 to-transparent" />
-        </div> */}
+        </div>
 
         {/* HERO CONTENT */}
         <div className="max-container padding-container relative z-20 flex flex-col w-full">
